@@ -7,8 +7,8 @@ class SnippetSerializer(serializers.Serializer):
     title = serializers.CharField(required=False, allow_blank=True, max_length=100)
     code = serializers.CharField(style={'base_template': 'textarea.html'})
     linenos = serializers.BooleanField(required=False)
-    language = serializers.CharField(choices=LANGUAGE_CHOICES, default='python')
-    style = serializers.CharField(choices=STYLE_CHOICES, default='friendly')
+    language = serializers.ChoiceField(choices=LANGUAGE_CHOICES, default='python')
+    style = serializers.ChoiceField(choices=STYLE_CHOICES, default='friendly')
 
     def create(self, validated_data):
         """
