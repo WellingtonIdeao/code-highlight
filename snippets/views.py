@@ -22,7 +22,7 @@ class SnippetListView(View):
         serializer = SnippetSerializer(snippets, many=True)
         return JsonResponse(serializer.data, safe=False)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         data = JSONParser().parse(request)
         serializer = SnippetSerializer(data=data)
         if serializer.is_valid():
@@ -34,13 +34,19 @@ class SnippetListView(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class SnippetDetailView(View):
 
+    def get_object(self, pk=None):
+        if pk is None:
+            pk = self.kwargs.get('pk')
+        obj = get_object_or_404(Snippet, pk=pk)
+        return obj
+
     def get(self, request, *args, **kwargs):
-        snippet = get_object_or_404(Snippet, pk=kwargs['pk'])
+        snippet = self.get_object()
         serializer = SnippetSerializer(snippet)
         return JsonResponse(serializer.data)
 
     def put(self, request, *args, **kwargs):
-        snippet = get_object_or_404(Snippet, pk=kwargs['pk'])
+        snippet = self.get_object()
         data = JSONParser().parse(request)
         serializer = SnippetSerializer(snippet, data=data)
         if serializer.is_valid():
@@ -49,7 +55,7 @@ class SnippetDetailView(View):
         return JsonResponse(serializer.errors, status=400)
 
     def delete(self, request, *args, **kwargs):
-        snippet = get_object_or_404(Snippet, pk=kwargs['pk'])
+        snippet = self.get_object()
         snippet.delete()
         return HttpResponse(status=204)
 
