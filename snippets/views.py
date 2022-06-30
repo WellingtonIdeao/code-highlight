@@ -31,7 +31,9 @@ class SnippetListView(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SnippetDetailView(APIView):
-
+    """
+        Retrieve, update or delete a code snippet.
+    """
     def get_object(self, pk=None):
         if pk is None:
             pk = self.kwargs.get('pk')
