@@ -1,10 +1,9 @@
-from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, JsonResponse
-from django.views import View
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
-from rest_framework.parsers import JSONParser
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import Snippet
 from .serializers import SnippetSerializer
@@ -13,55 +12,58 @@ from .serializers import SnippetSerializer
 # Create your views here.
 
 @method_decorator(csrf_exempt, name='dispatch')
-class SnippetListView(View):
+class SnippetListView(APIView):
     """
         List all code snippets, or create a new snippet.
     """
     def get(self, request, *args, **kwargs):
         snippets = Snippet.objects.all()
         serializer = SnippetSerializer(snippets, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        data = JSONParser().parse(request)
-        serializer = SnippetSerializer(data=data)
+        serializer = SnippetSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class SnippetDetailView(View):
+class SnippetDetailView(APIView):
 
     def get_object(self, pk=None):
         if pk is None:
             pk = self.kwargs.get('pk')
-        obj = get_object_or_404(Snippet, pk=pk)
+        obj = Snippet.objects.get(pk=pk)
         return obj
 
     def get(self, request, *args, **kwargs):
-        snippet = self.get_object()
+        try:
+            snippet = self.get_object()
+        except Snippet.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
         serializer = SnippetSerializer(snippet)
-        return JsonResponse(serializer.data)
+        return Response(serializer.data)
 
     def put(self, request, *args, **kwargs):
-        snippet = self.get_object()
-        data = JSONParser().parse(request)
-        serializer = SnippetSerializer(snippet, data=data)
+        try:
+            snippet = self.get_object()
+        except Snippet.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = SnippetSerializer(snippet, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
+        try:
+            snippet = self.get_object()
+        except Snippet.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         snippet = self.get_object()
         snippet.delete()
-        return HttpResponse(status=204)
-
-
-
-
-
-
-
+        return Response(status=status.HTTP_204_NO_CONTENT)
