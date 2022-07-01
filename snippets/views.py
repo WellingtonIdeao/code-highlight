@@ -1,17 +1,12 @@
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.http import Http404
+from django.contrib.auth.models import User
 
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
-from rest_framework import mixins
 from rest_framework import generics
 
 
 from .models import Snippet
-from .serializers import SnippetSerializer
+from .serializers import SnippetSerializer, UserSerializer
 
 
 # Create your views here.
@@ -32,3 +27,13 @@ class SnippetDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
+
+
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class UserDetailView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
