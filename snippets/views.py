@@ -1,9 +1,7 @@
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 
 from rest_framework import generics
-
+from rest_framework import permissions
 
 from .models import Snippet
 from .serializers import SnippetSerializer, UserSerializer
@@ -13,10 +11,11 @@ from .serializers import SnippetSerializer, UserSerializer
 
 class SnippetListView(generics.ListCreateAPIView):
     """
-        List all code snippets, or create a new snippet.
+        List all code snippets. Only authenticated user can also create a new snippet.
     """
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -24,17 +23,25 @@ class SnippetListView(generics.ListCreateAPIView):
 
 class SnippetDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
-        Retrieve, update or delete a code snippet.
+        Retrieve a code snippet. Only an authenticated user can also Update or delete a code snippet.
     """
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 class UserListView(generics.ListAPIView):
+    """
+         List all users.
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
 
 class UserDetailView(generics.RetrieveAPIView):
+    """
+        Retrieve a user.
+    """
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
