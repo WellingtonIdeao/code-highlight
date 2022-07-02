@@ -2,7 +2,6 @@ from django.urls import path
 from .views import SnippetListView, SnippetDetailView, UserListView, UserDetailView, api_root,\
     SnippetHighlightView
 from rest_framework.urlpatterns import format_suffix_patterns
-app_name = 'snippets'
 
 urlpatterns = [
     path('', api_root),
