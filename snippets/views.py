@@ -11,7 +11,6 @@ from .serializers import SnippetSerializer, UserSerializer
 
 # Create your views here.
 
-@method_decorator(csrf_exempt, name='dispatch')
 class SnippetListView(generics.ListCreateAPIView):
     """
         List all code snippets, or create a new snippet.
@@ -19,8 +18,10 @@ class SnippetListView(generics.ListCreateAPIView):
     queryset = Snippet.objects.all()
     serializer_class = SnippetSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
-@method_decorator(csrf_exempt, name='dispatch')
+
 class SnippetDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
         Retrieve, update or delete a code snippet.
